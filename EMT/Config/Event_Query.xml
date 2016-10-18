@@ -1,0 +1,5 @@
+<QueryList>
+  <Query Id="0" Path="Application">
+    <Select Path="Application">*[System[Provider[@Name='EMET'] and (Level=2) and (EventID=2)]]</Select>
+  </Query>
+</QueryList>

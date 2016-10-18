@@ -1,0 +1,9 @@
+{
+    "EmetRegistryKeyPath":  "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\EMET_Service",
+    "EmetEventLog":  "Microsoft-Windows-EMET-EMT-Events/Operational",
+    "GracePeriod":  7,
+    "HoursOfLogsToParse":  12,
+    "ThresholdToReconfigure":  1,
+	"ConfigurationFileName": "Popular Software.xml",
+	"ApplicationRegistryFileName": "EMET_Application_Registry.xml"
+}
