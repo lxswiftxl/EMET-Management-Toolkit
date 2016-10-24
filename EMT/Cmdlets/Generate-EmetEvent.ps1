@@ -1,5 +1,42 @@
 ﻿function Generate-EmetEvent()
 {
+    Param(
+    [Parameter(Mandatory="true",
+               ParameterSetName="Stock",Position=0)]
+    [switch]$Stock,
+
+    [Parameter(Mandatory="true",
+               ParameterSetName="Live",Position=0)]
+    [switch]$Live,
+
+    [Parameter(Mandatory="true",
+               ParameterSetName="Live")]
+    [string]$ProcessToEmulate,
+    
+    [int]$NumberOfEventsToGenerate = 1
+    )
+
+    $Mitigation = "Caller"
+    $Process = (Get-Process -Name $ProcessToEmulate)[0]
+    $ProcessName = $Process.path | split-path -Leaf
+    $ProcessFullName = $Process.path
+    $ProcessUser = $Process.StartInfo.Environment["USERNAME"]
+    $ProcessUserDomain = $Process.StartInfo.Environment["USERDOMAIN"]
+    $ProcessPid = "0x" + ('{0:x}' -f $Process.Id).ToUpper() + " (" + $Process.Id + ")"
+
+    $LiveEvent = "EMET detected $Mitigation mitigation and will close the application: $ProcessName
+
+    EAF check failed:
+      Application 	: $ProcessFullName
+      User Name 	: $ProcessUserDomain\$ProcessUser
+      Session ID 	: 1
+      PID 		: $ProcessPid
+      TID 		: $ProcessPid
+      Module 	: N/A
+      Mod Base 	: 0x00000000
+      Mod Address 	: 0x71B0036C
+      Mem Address 	: 0x00000000
+    "
 
     $netidmgr_EAF = "EMET detected EAF mitigation and will close the application: netidmgr.exe
 
@@ -57,8 +94,6 @@
       Mem Address 	: 0x00000000
     "
 
-
-
     $Acrobat_EAF = "EMET detected EAF mitigation and will close the application: Acrobat.exe
 
     EAF check failed:
@@ -92,6 +127,7 @@
       MD5 		: 0x3D756EA47CC1C213677F1124A2905924
       SHA1 		: 0xDA39A3EE5E6B4B0D3255BFEF95601890AFD80709
     "
+
     $Acrobat_EAF_3 = "EMET detected EAF mitigation and will close the application: Acrobat.exe
 
     EAF check failed:
@@ -153,27 +189,32 @@
       Mem Address 	: 0x621C8F33
     "
 
-    # Lsit of all messages for EMET logs above
+    # List of all messages for EMET logs above
     #$IEXPLORER_DEP, $IEXPLORER_Caller, $chrome_Caller, $chrome_EAF, $Acrobat_EAF_3, $Acrobat_EAF_2, $Acrobat_EAF, $plugin_container_EAF, $pidgin_EAF,  $netidmgr_EAF
 
-
-
-    $list_of_messages = @($IEXPLORER_DEP, $IEXPLORER_Caller, $chrome_Caller, $chrome_EAF, $Acrobat_EAF_3, $Acrobat_EAF_2, $Acrobat_EAF, $plugin_container_EAF, $pidgin_EAF,  $netidmgr_EAF)
-
-    $Number_of_logs_to_generate = 1
+    $list_of_messages = @($IEXPLORER_DEP,
+                          $IEXPLORER_Caller,
+                          $chrome_Caller,
+                          $chrome_EAF,
+                          $Acrobat_EAF_3,
+                          $Acrobat_EAF_2,
+                          $Acrobat_EAF,
+                          $plugin_container_EAF,
+                          $pidgin_EAF,
+                          $netidmgr_EAF)
+    
+    if ($Live)
+    {
+        $list_of_messages = $LiveEvent
+    }
 
     $counter = 0
-    while ($counter -lt $Number_of_logs_to_generate)
+    while ($counter -lt $NumberOfEventsToGenerate)
     {
-
         foreach ($message in $list_of_messages)
         {
-    
             Write-EventLog -LogName Application -Source EMET -EntryType Error -EventId 02 -Category 0 -Message $message
-    
         }
-    
         $counter += 1
-
     }
 }

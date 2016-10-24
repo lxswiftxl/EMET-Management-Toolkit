@@ -36,24 +36,30 @@ $Subscription = @"
 </QueryList>
 "@
 
-$splat = @{
-"TaskName" = 'EMET Analyzer';
-"TaskDescription" = 'Parses the Event long when EMET triggers and determines if EMET needs reconfigured';
-"TaskCommand" = (join-path $PSHOME 'powershell.exe');
-"TaskArg" = ('-ExecutionPolicy Bypass -File "' + (join-path $env:PSModulePath.split(';')[1] 'EMT\Scripts\EMET_Analyzer.ps1"'));
-"Subscription" = $Subscription;
-"TriggerType" = 0
+if (-not(Get-ScheduledTask -TaskName "EMET Analyzer"))
+{
+    $splat = @{
+    "TaskName" = 'EMET Analyzer';
+    "TaskDescription" = 'Parses the Event long when EMET triggers and determines if EMET needs reconfigured';
+    "TaskCommand" = (join-path $PSHOME 'powershell.exe');
+    "TaskArg" = ('-ExecutionPolicy Bypass -File "' + (join-path $env:PSModulePath.split(';')[1] 'EMT\Scripts\EMET_Analyzer.ps1"'));
+    "Subscription" = $Subscription;
+    "TriggerType" = 0
+    }
+
+    New-ScheduledTaskComObject @splat
 }
 
-New-ScheduledTaskComObject @splat
+if (-not(Get-ScheduledTask -TaskName 'EMET Event Converter'))
+{
+    $splat = @{
+    "TaskName" = 'EMET Event Converter';
+    "TaskDescription" = 'Parses the Event long when EMET triggers and reformat them into easily consumable event with json objects as message fields';
+    "TaskCommand" = (join-path $PSHOME 'powershell.exe');
+    "TaskArg" = ('-ExecutionPolicy Bypass -File "' + (join-path $env:PSModulePath.split(';')[1] 'EMT\Scripts\EMET_Event_Converter.ps1"'));
+    "Subscription" = $Subscription;
+    "TriggerType" = 0
+    }
 
-$splat = @{
-"TaskName" = 'EMET Event Converter';
-"TaskDescription" = 'Parses the Event long when EMET triggers and reformat them into easily consumable event with json objects as message fields';
-"TaskCommand" = (join-path $PSHOME 'powershell.exe');
-"TaskArg" = ('-ExecutionPolicy Bypass -File "' + (join-path $env:PSModulePath.split(';')[1] 'EMT\Scripts\EMET_Event_Converter.ps1"'));
-"Subscription" = $Subscription;
-"TriggerType" = 0
+    New-ScheduledTaskComObject @splat
 }
-
-New-ScheduledTaskComObject @splat
