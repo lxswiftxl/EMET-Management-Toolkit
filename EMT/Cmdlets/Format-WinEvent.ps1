@@ -45,23 +45,40 @@
     
                     $EVENT.MessageProperties | Add-Member -MemberType NoteProperty -Name $MATCH.groups[1].value.trim() -Value $MATCH.groups[2].value.trim()
                 }
+                # Get the name of the rule that logged this event
+                $EVENT.MessageProperties | Add-Member -MemberType NoteProperty -Name Rule -Value $EVENT.TaskDisplayName.split(":")[1].split(")")[0].trim()
+                
                 $Results += $EVENT
             }
 
             if ($Application -eq "EMET")
             {
-                $Matches = ($Event.Message | Select-String -Pattern $EMET_Regex.Key_Value_Pattern -AllMatches).MAtches
+                $Matches = ($Event.Message | Select-String -Pattern $EMET_Regex.Key_Value_Pattern -AllMatches).Matches
                 $EVENT | Add-Member -MemberType NoteProperty -Name MessageProperties -Value (New-Object -TypeName PSObject)
 
                 # The results of our regex are parsed and 
                 # the key value pairs are added to the EventObj as property value combinations  
                 foreach ($MATCH in $Matches){
-                
-                    $EVENT.MessageProperties | Add-Member -MemberType NoteProperty -Name $MATCH.groups[1].value.trim() -Value $MATCH.groups[2].value.trim()
+                    
+                    <#
+                    $MATCH.group[1].value.trim() | out-host
+                    # look for the PID and TID values. Remove the hex and other formatting.
+                    if ($MATCH.group[1].value.trim() -eq 'PID'){
+
+                        $EVENT.MessageProperties | Add-Member -MemberType NoteProperty -Name $MATCH.groups[1].value.trim() -Value $MATCH.groups[2].value.split(' ')[1].split('(')[1].split(')')[0].trim()
+                    }
+                    elseif ($MATCH.group[1].value.trim() -eq 'TID'){
+
+                        $EVENT.MessageProperties | Add-Member -MemberType NoteProperty -Name $MATCH.groups[1].value.trim() -Value $MATCH.groups[2].value.split(' ')[1].split('(')[1].split(')')[0].trim()
+                    }
+                    else{
+                    #>
+                        $EVENT.MessageProperties | Add-Member -MemberType NoteProperty -Name $MATCH.groups[1].value.trim() -Value $MATCH.groups[2].value.trim()
+                    #}
                 }
 
                 # The processname is split out of the application name and the mitigation name is aquired with a specific regex
-                $ProcessName = $EVENT.MessageProperties.Application.split('\')[-1]
+                $ProcessName = $EVENT.MessageProperties.Application | Split-Path -leaf
                 $Event.MessageProperties | Add-Member -MemberType NoteProperty -Name 'ProcessName' -Value $ProcessName
 
                 $MitigationName = ($EVENT.Message | select-string -pattern $EMET_Regex.Mitgation_Name_Pattern).Matches[0].Groups[1].Value.Trim()

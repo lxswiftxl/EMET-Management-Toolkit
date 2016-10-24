@@ -36,9 +36,8 @@ foreach ($FORMATEDEVENT in $FormattedEvents)
 {
     $RelatedEvents = $SysmonEvents | Where-Object {$_.messageproperties.processid -eq $FORMATEDEVENT.pid}
     break
-    $SysmonEvents[0].TaskDisplayName.split(":")[1].trim().split(")")[0].trim()
 }
-
+exit
 # Get all the events in the custom EMET event log and store them as objects
 # TODO: We should make this a configurable duration so that it can deal with different deployments
 $CustomEmetEvents = Get-WinEvent -FilterHashtable @{logname="Microsoft-Windows-EMET-JSON/Operational"; providername='EMT'; starttime=[datetime]::Now.AddHours(-6)}
