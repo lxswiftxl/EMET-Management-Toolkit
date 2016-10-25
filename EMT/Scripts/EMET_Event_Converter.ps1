@@ -15,15 +15,15 @@ $EmetEvents = Get-WinEvent -FilterHashtable @{logname='application'; providernam
 # Do not include the "message", "messageproperties", or "properties" properties because
 # They are redundent.
 $FormattedEvents = @()
-foreach ($event in $EmetEvents)
+foreach ($EVENT in $EmetEvents)
 {
     # Create an event with all the KV of the message field. Then add in all other properties from the event
     $NewEvent = $event.MessageProperties
-    foreach ($FIELD in ($event | Get-Member | Where-Object {$_.membertype -eq "property"}).Name)
+    foreach ($FIELD in ($EVENT | Get-Member -MemberType Property,NoteProperty).Name)
     {
         if ($FIELD -notcontains ("MessageProperties", "Message", "Properties"))
         {
-            $NewEvent | Add-Member -MemberType NoteProperty -Name $FIELD -Value $event.$FIELD
+            $NewEvent | Add-Member -MemberType NoteProperty -Name $FIELD -Value $EVENT.$FIELD
         }
     }
     $FormattedEvents += $NewEvent
