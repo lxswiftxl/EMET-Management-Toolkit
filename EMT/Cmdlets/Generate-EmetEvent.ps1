@@ -16,15 +16,17 @@
     [int]$NumberOfEventsToGenerate = 1
     )
 
-    $Mitigation = "Caller"
-    $Process = (Get-Process -Name $ProcessToEmulate)[0]
-    $ProcessName = $Process.path | split-path -Leaf
-    $ProcessFullName = $Process.path
-    $ProcessUser = $Process.StartInfo.Environment["USERNAME"]
-    $ProcessUserDomain = $Process.StartInfo.Environment["USERDOMAIN"]
-    $ProcessPid = "0x" + ('{0:x}' -f $Process.Id).ToUpper() + " (" + $Process.Id + ")"
+    if ($Live){
+        
+        $Mitigation = "Caller"
+        $Process = (Get-Process -Name $ProcessToEmulate)[0]
+        $ProcessName = $Process.path | split-path -Leaf
+        $ProcessFullName = $Process.path
+        $ProcessUser = $Process.StartInfo.Environment["USERNAME"]
+        $ProcessUserDomain = $Process.StartInfo.Environment["USERDOMAIN"]
+        $ProcessPid = "0x" + ('{0:x}' -f $Process.Id).ToUpper() + " (" + $Process.Id + ")"
 
-    $LiveEvent = "EMET detected $Mitigation mitigation and will close the application: $ProcessName
+        $LiveEvent = "EMET detected $Mitigation mitigation and will close the application: $ProcessName
 
     EAF check failed:
       Application 	: $ProcessFullName
@@ -37,6 +39,7 @@
       Mod Address 	: 0x71B0036C
       Mem Address 	: 0x00000000
     "
+    }
 
     $netidmgr_EAF = "EMET detected EAF mitigation and will close the application: netidmgr.exe
 

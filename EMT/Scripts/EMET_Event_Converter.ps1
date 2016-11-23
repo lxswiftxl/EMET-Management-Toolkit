@@ -19,16 +19,14 @@ foreach ($EVENT in $EmetEvents)
 {
     # Create an event with all the KV of the message field. Then add in all other properties from the event
     $NewEvent = $event.MessageProperties
-    foreach ($FIELD in ($EVENT | Get-Member -MemberType Property,NoteProperty).Name)
+    foreach ($FIELD in ($EVENT | Get-Member -MemberType Property,NoteProperty | Where-Object {$_.name -notmatch "MessageProperties|Message|Properties"}).Name)
     {
-        if ($FIELD -notcontains ("MessageProperties", "Message", "Properties"))
-        {
-            $NewEvent | Add-Member -MemberType NoteProperty -Name $FIELD -Value $EVENT.$FIELD
-        }
+        $NewEvent | Add-Member -MemberType NoteProperty -Name $FIELD -Value $EVENT.$FIELD
     }
     $FormattedEvents += $NewEvent
 }
 
+<#
 #Sysmon integration goes here
 # TODO: We should make this a configurable duration so that it can deal with different deployments
 $SysmonEvents = (Get-WinEvent -FilterHashtable @{logname="Microsoft-Windows-Sysmon/Operational"; providername='Microsoft-Windows-Sysmon'; starttime=[datetime]::Now.AddHours(-1)}) | Format-WinEvent -application Sysmon
@@ -38,6 +36,7 @@ foreach ($FORMATEDEVENT in $FormattedEvents)
     break
 }
 exit
+#>
 # Get all the events in the custom EMET event log and store them as objects
 # TODO: We should make this a configurable duration so that it can deal with different deployments
 $CustomEmetEvents = Get-WinEvent -FilterHashtable @{logname="Microsoft-Windows-EMET-JSON/Operational"; providername='EMT'; starttime=[datetime]::Now.AddHours(-6)}
